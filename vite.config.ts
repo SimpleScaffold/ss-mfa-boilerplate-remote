@@ -53,6 +53,11 @@ export default defineConfig({
     server: {
         origin: remoteConfig.origin,
         port: remoteConfig.port,
+        // Host(다른 origin)에서 remote 모듈을 로드하므로 CORS 허용이 필요합니다.
+        cors: true,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+        },
         hmr: {
             port: remoteConfig.port,
             host: extractHostFromOrigin(remoteConfig.origin),
