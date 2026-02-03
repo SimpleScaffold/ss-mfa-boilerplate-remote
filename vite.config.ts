@@ -12,7 +12,12 @@ const repoRoot = path.resolve(__dirname, '../../../../')
 const DEFAULT_ENV_MODE = 'local' as const
 
 const envMode = (process.env.MF_ENV || DEFAULT_ENV_MODE) as EnvMode
-const remoteConfig = getRemoteConfig(envMode)
+// NOTE: config 로더는 런타임 환경에 따라 타입이 넓게(unknown) 잡힐 수 있어,
+// vite.config.ts에서는 필요한 필드만 보장하도록 캐스팅합니다.
+const remoteConfig = getRemoteConfig(envMode) as {
+    origin: string
+    port: number
+}
 
 const SHARED_DEPENDENCIES = {
     react: { singleton: true },
@@ -30,8 +35,12 @@ export default defineConfig({
         target: 'chrome107',
     },
     plugins: [
-        react(),
-        tailwindcss(),
+        // NOTE:
+        // Yarn(node-modules) 환경에서 vite가 중복 설치되면(루트/워크스페이스)
+        // 플러그인 타입이 서로 달라 TS 오버로드 에러가 발생할 수 있습니다.
+        // 런타임에는 문제 없어서 캐스팅으로 해결합니다.
+        react() as any,
+        tailwindcss() as any,
         federation({
             name: 'remoteapp1',
             manifest: true,
@@ -40,7 +49,7 @@ export default defineConfig({
             },
             shared: SHARED_DEPENDENCIES,
             dts: false,
-        }),
+        }) as any,
     ],
     resolve: {
         alias: [
