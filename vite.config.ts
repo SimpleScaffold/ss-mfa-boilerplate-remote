@@ -62,6 +62,9 @@ export default defineConfig({
     server: {
         origin: remoteConfig.origin,
         port: remoteConfig.port,
+        // remote 앱은 자동으로 브라우저를 열지 않도록 고정합니다.
+        // (yarn dev 시 host가 아닌 remote(12000)가 먼저 열리는 현상 방지)
+        open: false,
         // Host(다른 origin)에서 remote 모듈을 로드하므로 CORS 허용이 필요합니다.
         cors: true,
         headers: {
