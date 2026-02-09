@@ -1,7 +1,15 @@
 {
     "extends": "../../../../tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "paths": {
+            "@repo/fe-ui/*": ["../../../../packages/fe/ui/src/exports/*"],
+            "@/lib/shadcn/*": ["../../../../packages/fe/ui/src/lib/shadcn/*"]
+        },
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "skipLibCheck": true
     },
     "include": ["src"]
 }
