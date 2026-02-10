@@ -77,6 +77,16 @@ export default defineConfig(({ command }) => {
                 allow: [repoRoot],
             },
         },
+        preview: {
+            host: extractHostFromOrigin(remoteConfig.origin),
+            port: remoteConfig.port,
+            strictPort: true,
+            open: false,
+            cors: true,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+        },
         build: {
             target: 'chrome107',
             rollupOptions: {
