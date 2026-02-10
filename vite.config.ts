@@ -79,6 +79,22 @@ export default defineConfig(({ command }) => {
         },
         build: {
             target: 'chrome107',
+            rollupOptions: {
+                // Module Federation SDK의 eval 경고 억제
+                // 참고: doc/kr/11-code-quality/build-eval-warning.md
+                // 이 eval은 브라우저에서 실행되지 않는 Node.js 전용 코드입니다
+                onwarn(warning, warn) {
+                    // Module Federation SDK의 eval 경고는 무시
+                    if (
+                        warning.code === 'EVAL' &&
+                        warning.id?.includes('@module-federation/sdk')
+                    ) {
+                        return
+                    }
+                    // 기타 경고는 정상적으로 표시
+                    warn(warning)
+                },
+            },
         },
     }
 })
