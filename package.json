@@ -8,7 +8,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "lint": "echo 'lint'",
-        "prepare": "husky"
+        "prepare": "node scripts/sync-package-name.mjs && husky"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.6.1",

@@ -4,20 +4,15 @@ import tailwindcss from '@tailwindcss/vite'
 import { federation } from '@module-federation/vite'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { getRemoteConfig, type EnvMode } from '../../../../config'
+import { getRemoteConfigByName, type EnvMode } from '../../../../config'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
 
-const DEFAULT_ENV_MODE = 'local' as const
-
-const envMode = (process.env.MF_ENV || DEFAULT_ENV_MODE) as EnvMode
-// NOTE: config 로더는 런타임 환경에 따라 타입이 넓게(unknown) 잡힐 수 있어,
-// vite.config.ts에서는 필요한 필드만 보장하도록 캐스팅합니다.
-const remoteConfig = getRemoteConfig(envMode) as {
-    origin: string
-    port: number
-}
+// git pull 시 폴더명(예: measurement)을 기반으로 MF name/exposes 자동 설정
+const REMOTE_FOLDER_NAME = path.basename(__dirname)
+const REMOTE_MODULE_NAME =
+    REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
 
 function extractHostFromOrigin(origin: string): string {
     const match = origin.replace(/^https?:\/\//, '').split(':')[0]
@@ -26,9 +21,14 @@ function extractHostFromOrigin(origin: string): string {
 
 export default defineConfig(({ command }) => {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
-    const remoteConfig = getRemoteConfig(envMode) as {
+    const remoteConfig = getRemoteConfigByName(REMOTE_FOLDER_NAME, envMode) as {
         origin: string
         port: number
+    } | null
+    if (!remoteConfig) {
+        throw new Error(
+            `"${REMOTE_FOLDER_NAME}" remotes 설정을 config/env/local.ts에 추가해주세요.`,
+        )
     }
 
     const isDev = command === 'serve'
@@ -44,10 +44,10 @@ export default defineConfig(({ command }) => {
             react(),
             tailwindcss(),
             federation({
-                name: 'remoteapp1',
+                name: REMOTE_FOLDER_NAME,
                 manifest: true,
                 exposes: {
-                    './RemoteApp1': './src/App.tsx',
+                    [`./${REMOTE_MODULE_NAME}`]: './src/App.tsx',
                 },
                 shared,
                 dts: false,
