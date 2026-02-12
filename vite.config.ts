@@ -47,7 +47,7 @@ export default defineConfig(({ command }) => {
                 name: 'remoteapp1',
                 manifest: true,
                 exposes: {
-                    './RemoteApp1': './src/RemoteApp1.tsx',
+                    './RemoteApp1': './src/App.tsx',
                 },
                 shared,
                 dts: false,
@@ -55,6 +55,10 @@ export default defineConfig(({ command }) => {
         ],
         resolve: {
             alias: [
+                {
+                    find: /^src\//,
+                    replacement: `${path.resolve(__dirname, 'src')}/`,
+                },
                 {
                     find: /^@\//,
                     replacement: `${path.resolve(__dirname, '../../../../packages/fe/ui/src')}/`,

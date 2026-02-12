@@ -1,7 +1,8 @@
-import RemoteApp1 from './RemoteApp1'
+import { RouterProvider } from 'react-router'
+import router from 'src/globals/router/router'
 
 function App() {
-    return <RemoteApp1 />
+    return <RouterProvider router={router} />
 }
 
 export default App

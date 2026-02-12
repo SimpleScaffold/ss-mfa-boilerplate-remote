@@ -4,6 +4,7 @@
         "outDir": "./dist",
         "baseUrl": ".",
         "paths": {
+            "src/*": ["./src/*"],
             "@repo/fe-ui/*": ["../../../../packages/fe/ui/src/exports/*"],
             "@/lib/shadcn/*": ["../../../../packages/fe/ui/src/lib/shadcn/*"]
         },

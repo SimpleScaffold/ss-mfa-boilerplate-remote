@@ -1,6 +1,5 @@
 import { Button } from '@repo/fe-ui/button'
 import { formatDate } from '@repo/fe-utils'
-import './styles.css'
 
 interface ItemCardProps {
     title: string
@@ -24,7 +23,7 @@ const ITEMS = [
     { title: 'Item #2', status: 'Completed' },
 ] as const
 
-interface RemoteApp1Props {
+export interface RemoteApp1Props {
     num?: number
     setNum?: (value: number | ((prev: number) => number)) => void
 }
