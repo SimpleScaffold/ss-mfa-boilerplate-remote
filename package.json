@@ -1,5 +1,5 @@
 {
-    "name": "@repo/remote-app1",
+    "name": "@repo/remote",
     "version": "1.0.0",
     "private": true,
     "type": "module",
