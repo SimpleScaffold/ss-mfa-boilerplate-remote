@@ -4,7 +4,6 @@ import { Link } from 'react-router'
  * 메뉴 페이지 맵핑 (한글 / 영어 / 경로)
  */
 const PAGE_LIST = [
-    { path: '/sample', ko: '샘플', en: 'Sample' },
     { path: '/planar-distance', ko: '평면거리', en: 'Planar Distance' },
     { path: '/spatial-distance', ko: '공간거리', en: 'Spatial Distance' },
     { path: '/vertical-distance', ko: '수직거리', en: 'Vertical Distance' },
