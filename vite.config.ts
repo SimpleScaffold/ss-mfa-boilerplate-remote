@@ -19,12 +19,9 @@ function extractHostFromOrigin(origin: string): string {
     return match || 'localhost'
 }
 
-export default defineConfig(async ({ command }) => {
+export default defineConfig(({ command }) => {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
-    const remoteConfig = (await getRemoteConfigByName(
-        REMOTE_FOLDER_NAME,
-        envMode,
-    )) as {
+    const remoteConfig = getRemoteConfigByName(REMOTE_FOLDER_NAME, envMode) as {
         origin: string
         port: number
     } | null
