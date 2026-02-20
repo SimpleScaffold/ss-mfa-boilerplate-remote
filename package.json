@@ -7,8 +7,8 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "echo 'lint'",
-        "prepare": "husky"
+        "prepare": "husky",
+        "lint": "eslint ."
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.6.1",
