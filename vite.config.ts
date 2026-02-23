@@ -14,25 +14,34 @@ const REMOTE_FOLDER_NAME = path.basename(__dirname)
 const REMOTE_MODULE_NAME =
     REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
 
-function extractHostFromOrigin(origin: string): string {
-    const match = origin.replace(/^https?:\/\//, '').split(':')[0]
-    return match || 'localhost'
+function extractHostFromUrl(url: string): string {
+    const u = (url ?? '').replace(/^https?:\/\//, '').split(':')[0]
+    return u || 'localhost'
+}
+
+function getPortFromUrl(url: string): number {
+    try {
+        const p = new URL(url).port
+        return p ? parseInt(p, 10) : 5173
+    } catch {
+        return 5173
+    }
 }
 
 export default defineConfig(async ({ command }) => {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
-    const remoteConfig = (await getRemoteConfigByName(
+    const remoteConfig = await getRemoteConfigByName(
         REMOTE_FOLDER_NAME,
         envMode,
-    )) as {
-        origin: string
-        port: number
-    } | null
-    if (!remoteConfig) {
+    )
+    if (!remoteConfig?.url) {
         throw new Error(
             `"${REMOTE_FOLDER_NAME}" remotes 설정을 config/env/local.ts에 추가해주세요.`,
         )
     }
+
+    const baseUrl = remoteConfig.url
+    const port = remoteConfig.port ?? getPortFromUrl(baseUrl)
 
     const isDev = command === 'serve'
     const shared: Record<string, { singleton?: boolean }> = isDev
@@ -69,24 +78,24 @@ export default defineConfig(async ({ command }) => {
             ],
         },
         server: {
-            origin: remoteConfig.origin,
-            port: remoteConfig.port,
+            origin: baseUrl,
+            port,
             open: false,
             cors: true,
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },
             hmr: {
-                port: remoteConfig.port,
-                host: extractHostFromOrigin(remoteConfig.origin),
+                port,
+                host: extractHostFromUrl(baseUrl),
             },
             fs: {
                 allow: [repoRoot],
             },
         },
         preview: {
-            host: extractHostFromOrigin(remoteConfig.origin),
-            port: remoteConfig.port,
+            host: extractHostFromUrl(baseUrl),
+            port,
             strictPort: true,
             open: false,
             cors: true,
