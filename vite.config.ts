@@ -5,28 +5,14 @@ import { federation } from '@module-federation/vite'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getRemoteConfigByName, type EnvMode } from '../../../../config'
+import { extractHostFromUrl, getPortFromUrl } from '../../../../config/vite'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
 
-// git pull 시 폴더명(예: measurement)을 기반으로 MF name/exposes 자동 설정
 const REMOTE_FOLDER_NAME = path.basename(__dirname)
 const REMOTE_MODULE_NAME =
     REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
-
-function extractHostFromUrl(url: string): string {
-    const u = (url ?? '').replace(/^https?:\/\//, '').split(':')[0]
-    return u || 'localhost'
-}
-
-function getPortFromUrl(url: string): number {
-    try {
-        const p = new URL(url).port
-        return p ? parseInt(p, 10) : 5173
-    } catch {
-        return 5173
-    }
-}
 
 export default defineConfig(async ({ command }) => {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
@@ -106,18 +92,13 @@ export default defineConfig(async ({ command }) => {
         build: {
             target: 'chrome107',
             rollupOptions: {
-                // Module Federation SDK의 eval 경고 억제
-                // 참고: doc/kr/11-code-quality/build-eval-warning.md
-                // 이 eval은 브라우저에서 실행되지 않는 Node.js 전용 코드입니다
                 onwarn(warning, warn) {
-                    // Module Federation SDK의 eval 경고는 무시
                     if (
                         warning.code === 'EVAL' &&
                         warning.id?.includes('@module-federation/sdk')
                     ) {
                         return
                     }
-                    // 기타 경고는 정상적으로 표시
                     warn(warning)
                 },
             },
