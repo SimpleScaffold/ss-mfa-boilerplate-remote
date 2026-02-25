@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { federation } from '@module-federation/vite'
@@ -14,7 +14,7 @@ const REMOTE_FOLDER_NAME = path.basename(__dirname)
 const REMOTE_MODULE_NAME =
     REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
 
-export default defineConfig(async () => {
+async function loadConfig(): Promise<UserConfig> {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
     const remoteConfig = await getRemoteConfigByName(
         REMOTE_FOLDER_NAME,
@@ -102,5 +102,7 @@ export default defineConfig(async () => {
                 },
             },
         },
-    }
-})
+    } as UserConfig
+}
+
+export default defineConfig(loadConfig())
