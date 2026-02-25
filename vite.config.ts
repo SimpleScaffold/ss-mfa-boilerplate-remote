@@ -14,7 +14,7 @@ const REMOTE_FOLDER_NAME = path.basename(__dirname)
 const REMOTE_MODULE_NAME =
     REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
 
-export default defineConfig(async ({ command }) => {
+export default defineConfig(async () => {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
     const remoteConfig = await getRemoteConfigByName(
         REMOTE_FOLDER_NAME,
@@ -29,13 +29,11 @@ export default defineConfig(async ({ command }) => {
     const baseUrl = remoteConfig.url
     const port = remoteConfig.port ?? getPortFromUrl(baseUrl)
 
-    const isDev = command === 'serve'
-    const shared: Record<string, { singleton?: boolean }> = isDev
-        ? {}
-        : {
-              react: { singleton: true },
-              'react-dom': { singleton: true },
-          }
+    // dev/build 모두 MF 사용 → shared singleton 항상 필요
+    const shared = {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+    }
 
     return {
         plugins: [
@@ -43,6 +41,7 @@ export default defineConfig(async ({ command }) => {
             tailwindcss(),
             federation({
                 name: REMOTE_FOLDER_NAME,
+                filename: 'remoteEntry.js',
                 manifest: true,
                 exposes: {
                     [`./${REMOTE_MODULE_NAME}`]: './src/App.tsx',
