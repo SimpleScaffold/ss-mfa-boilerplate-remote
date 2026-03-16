@@ -1,9 +1,7 @@
 /**
  * API 클라이언트 (Host와 동일한 구조)
  */
-const env = import.meta.env as unknown as Record<string, unknown>
-const host = env.VITE_API_HOST
-const baseURL: string = typeof host === 'string' ? host : ''
+const baseURL = import.meta.env.VITE_API_HOST as string
 
 export const client = {
     baseURL,

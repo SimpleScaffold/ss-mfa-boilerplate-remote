@@ -10,6 +10,12 @@ const sampleModule = createSlice({
         decrement: (state) => {
             state.value -= 1
         },
+        multiply: (state) => {
+            state.value *= 2
+        },
+        divide: (state) => {
+            state.value = Math.floor(state.value / 2)
+        },
         setValue: (state, action: PayloadAction<number>) => {
             state.value = action.payload
         },
