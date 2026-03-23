@@ -17,6 +17,8 @@ export type ModalExpansionEntry = {
     url: string
     displayName: string
     initialPosition?: { x: number; y: number }
+    /** 모달 초기 크기 (px). Host가 적용 */
+    initialSize?: { width: number; height: number }
     /** Remote 컴포넌트에 전달할 props. modalId 있으면 { modalId } 전달 */
     props?: Record<string, unknown>
 }
@@ -50,7 +52,7 @@ export function getModalEntries(
         })
     }
 
-    // modalExpansion 없음: 단일 모달. pageConfig.initialPosition shorthand 지원
+    // modalExpansion 없음: 단일 모달. pageConfig.initialPosition, initialSize shorthand 지원
     const pagePath = config.path.replace(/^\/+/, '')
     return [
         {
@@ -59,6 +61,7 @@ export function getModalEntries(
             ...(config.initialPosition && {
                 initialPosition: config.initialPosition,
             }),
+            ...(config.initialSize && { initialSize: config.initialSize }),
         },
     ]
 }

@@ -15,6 +15,8 @@ export type PageConfig = {
     order?: number
     /** 단일 모달 시 shorthand. initialPosition만 필요할 때 modalExpansion 대신 사용 */
     initialPosition?: { x: number; y: number }
+    /** 단일 모달 시 shorthand. initialSize만 필요할 때 modalExpansion 대신 사용 */
+    initialSize?: { width: number; height: number }
     /** 모달 설정. 1개=단일 모달, 2개+=다중 모달. displayName 생략 시 title 사용 */
     modalExpansion?: ModalExpansionItem[]
 }
