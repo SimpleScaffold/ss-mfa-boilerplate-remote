@@ -5,7 +5,10 @@ import { federation } from '@module-federation/vite'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getRemoteConfigByName, type EnvMode } from '../../../../config'
-import { extractHostFromUrl, getPortFromUrl } from '../../../../config/vite'
+import {
+    extractHostFromUrl,
+    getPortFromUrl,
+} from '../../../../packages/fe/vite-config/src/url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
