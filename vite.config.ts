@@ -10,6 +10,7 @@ import {
     extractHostFromUrl,
     getPortFromUrl,
 } from '../../../../packages/fe/vite-config/url'
+import { remoteAppResolveAliases } from '../../../../packages/fe/vite-config/remoteAliases'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
@@ -58,27 +59,7 @@ async function loadConfig(): Promise<UserConfig> {
             }),
         ],
         resolve: {
-            alias: [
-                {
-                    find: '@repo/fe-ui/styles',
-                    replacement: path.join(
-                        repoRoot,
-                        'packages/fe/ui/src/styles/index.css',
-                    ),
-                },
-                {
-                    find: /^@repo\/fe-ui\/styles\/(.+)$/,
-                    replacement: `${path.join(repoRoot, 'packages/fe/ui/src/styles')}/$1`,
-                },
-                {
-                    find: /^src\//,
-                    replacement: `${path.resolve(__dirname, 'src')}/`,
-                },
-                {
-                    find: /^@\//,
-                    replacement: `${path.resolve(__dirname, '../../../../packages/fe/ui/src')}/`,
-                },
-            ],
+            alias: remoteAppResolveAliases(repoRoot, __dirname),
         },
         server: {
             origin: baseUrl,
