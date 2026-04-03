@@ -8,7 +8,7 @@
         "build": "vite build",
         "preview": "vite preview",
         "prepare": "husky",
-        "lint": "eslint ."
+        "lint": "yarn run -T eslint ."
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.6.1",
