@@ -10,7 +10,7 @@
                 "../../../../packages/fe/ui/src/styles/index.css"
             ],
             "@repo/fe-ui/styles/*": ["../../../../packages/fe/ui/src/styles/*"],
-            "@repo/fe-utils": ["../../../../packages/fe/utils"],
+            "@repo/fe-utils/*": ["../../../../packages/fe/utils/*"],
             "@repo/shared-config": ["../../../../packages/shared/config"],
             "@/lib/shadcn/*": ["../../../../packages/fe/ui/src/lib/shadcn/*"]
         },
