@@ -12,8 +12,7 @@
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.6.1",
-        "@repo/fe-ui": "workspace:*",
-        "@repo/fe-utils": "workspace:*",
+        "@repo/packages": "workspace:*",
         "react": "^19.1.0",
         "react-dom": "^19.1.0",
         "react-redux": "^9.2.0",

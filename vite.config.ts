@@ -1,6 +1,7 @@
 import { defineConfig, type UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import tsconfigPaths from 'vite-tsconfig-paths'
 import { federation } from '@module-federation/vite'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -8,7 +9,7 @@ import { getRemoteConfigByName, type EnvMode } from '../../../../config'
 import {
     extractHostFromUrl,
     getPortFromUrl,
-} from '../../../../packages/fe/vite-config/src/url'
+} from '../../../../packages/fe/vite-config/url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
@@ -40,6 +41,9 @@ async function loadConfig(): Promise<UserConfig> {
 
     return {
         plugins: [
+            tsconfigPaths({
+                projects: [path.join(__dirname, 'tsconfig.json')],
+            }),
             react(),
             tailwindcss(),
             federation({
@@ -55,6 +59,17 @@ async function loadConfig(): Promise<UserConfig> {
         ],
         resolve: {
             alias: [
+                {
+                    find: '@repo/fe-ui/styles',
+                    replacement: path.join(
+                        repoRoot,
+                        'packages/fe/ui/src/styles/index.css',
+                    ),
+                },
+                {
+                    find: /^@repo\/fe-ui\/styles\/(.+)$/,
+                    replacement: `${path.join(repoRoot, 'packages/fe/ui/src/styles')}/$1`,
+                },
                 {
                     find: /^src\//,
                     replacement: `${path.resolve(__dirname, 'src')}/`,
