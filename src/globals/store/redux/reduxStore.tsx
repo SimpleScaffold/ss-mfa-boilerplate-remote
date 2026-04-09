@@ -7,7 +7,7 @@ const reducers = {
 
 const store = configureStore({
     reducer: reducers,
-    devTools: process.env.NODE_ENV !== 'production',
+    devTools: import.meta.env.DEV,
 })
 
 export type AppStore = typeof store
