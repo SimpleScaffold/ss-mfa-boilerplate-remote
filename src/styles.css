@@ -1,2 +1,2 @@
-@import '@repo/fe-ui/styles';
+@import '@repo/packages/fe-ui/styles';
 @source './**/*.{js,jsx,ts,tsx}';
