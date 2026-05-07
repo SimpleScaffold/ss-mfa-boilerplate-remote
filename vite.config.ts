@@ -6,11 +6,13 @@ import { federation } from '@module-federation/vite'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getRemoteConfigByName, type EnvMode } from '../../../../config'
+import { kebabToPascal } from '../../../../packages/fe/utils/string/kebabToPascal'
 import {
     extractHostFromUrl,
     getPortFromUrl,
 } from '../../../../packages/fe/vite-config/url'
 import { remoteAppResolveAliases } from '../../../../packages/fe/vite-config/remoteAliases'
+import { getModalExposes } from '../../../../packages/fe/vite-config/remoteExposes'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
@@ -40,6 +42,12 @@ async function loadConfig(): Promise<UserConfig> {
         'react-dom': { singleton: true },
     }
 
+    const exposes = {
+        [`./${REMOTE_MODULE_NAME}`]: './src/App.tsx',
+        './ModalExpansions': './src/globals/config/modalExpansions.ts',
+        ...getModalExposes(__dirname, kebabToPascal),
+    }
+
     return {
         plugins: [
             tsconfigPaths({
@@ -51,9 +59,7 @@ async function loadConfig(): Promise<UserConfig> {
                 name: REMOTE_FOLDER_NAME,
                 filename: 'remoteEntry.js',
                 manifest: true,
-                exposes: {
-                    [`./${REMOTE_MODULE_NAME}`]: './src/App.tsx',
-                },
+                exposes,
                 shared,
                 dts: false,
             }),
