@@ -1,52 +1,26 @@
-import axios from 'axios'
-import { AsyncRequest, reduxMaker } from 'src/globals/store/redux/reduxUtils.ts'
-import { PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
-const prefix = 'sample'
-
-const asyncRequests = [
-    {
-        action: 'getPokemon',
-        state: 'pokemon',
-        initialState: {
-            name: 'pokemon',
-            id: 1,
+const sampleModule = createSlice({
+    name: 'sample',
+    initialState: { value: 0 },
+    reducers: {
+        increment: (state) => {
+            state.value += 1
         },
-        api: () => axios.get('https://pokeapi.co/api/v2/pokemon/ditto'),
-    } as const satisfies AsyncRequest<{ name: string; id: number }, void>,
-
-    {
-        action: 'getTest',
-        state: 'test',
-        initialState: [{ success: true, message: 'asd' }],
-        api: (
-            param = {
-                param1: 'string',
-                param2: 111,
-            },
-        ) => axios.post('https://test.com', param),
-    } as const satisfies AsyncRequest<
-        { success: boolean; message: string }[],
-        { param1: string; param2: number }
-    >,
-] as const
-
-const localState = {
-    value: 0,
-}
-
-const localReducers = {
-    decrement: (state: typeof localState) => {
-        state.value -= 1
+        decrement: (state) => {
+            state.value -= 1
+        },
+        multiply: (state) => {
+            state.value *= 2
+        },
+        divide: (state) => {
+            state.value = Math.floor(state.value / 2)
+        },
+        setValue: (state, action: PayloadAction<number>) => {
+            state.value = action.payload
+        },
     },
-    setValue: (state: typeof localState, action: PayloadAction<number>) => {
-        state.value = action.payload
-    },
-}
+})
 
-const module = reduxMaker(prefix, asyncRequests, localState, localReducers)
-export const {
-    slice: sampleSlice,
-    actions: sampleAction,
-    saga: sampleSaga,
-} = module
+export const sampleSlice = sampleModule
+export const sampleAction = sampleModule.actions

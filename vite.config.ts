@@ -1,133 +1,113 @@
-import react from '@vitejs/plugin-react-swc'
-import path, { resolve } from 'path'
+import { defineConfig, type UserConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import { defineConfig, Plugin } from 'vite'
-import fs, { copyFileSync } from 'fs'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import { federation } from '@module-federation/vite'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { getRemoteConfigByName, type EnvMode } from '../../../../config'
+import { kebabToPascal } from '../../../../packages/fe/utils/string/kebabToPascal'
+import {
+    extractHostFromUrl,
+    getPortFromUrl,
+} from '../../../../packages/fe/vite-config/url'
+import { remoteAppResolveAliases } from '../../../../packages/fe/vite-config/remoteAliases'
+import { getModalExposes } from '../../../../packages/fe/vite-config/remoteExposes'
 
-// https://vite.dev/config/
-export default defineConfig({
-    plugins: [react(), tailwindcss(), fontPreloadPlugin(), copyRobotsTxt()],
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const repoRoot = path.resolve(__dirname, '../../../../')
 
-    // 포트지정
-    server: {
-        port: 6075,
-    },
+const REMOTE_FOLDER_NAME = path.basename(__dirname)
+const REMOTE_MODULE_NAME =
+    REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
 
-    resolve: {
-        alias: {
-            src: path.resolve(__dirname, 'src'),
+async function loadConfig(): Promise<UserConfig> {
+    const envMode = (process.env.MF_ENV || 'local') as EnvMode
+    const remoteConfig = await getRemoteConfigByName(
+        REMOTE_FOLDER_NAME,
+        envMode,
+    )
+    if (!remoteConfig?.url) {
+        throw new Error(
+            `"${REMOTE_FOLDER_NAME}" remotes 설정을 config/env/local.ts에 추가해주세요.`,
+        )
+    }
+
+    const baseUrl = remoteConfig.url
+    const port = remoteConfig.port ?? getPortFromUrl(baseUrl)
+
+    // dev/build 모두 MF 사용 → shared singleton 항상 필요
+    const shared = {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+    }
+
+    const exposes = {
+        [`./${REMOTE_MODULE_NAME}`]: './src/App.tsx',
+        './ModalExpansions': './src/globals/config/modalExpansions.ts',
+        ...getModalExposes(__dirname, kebabToPascal),
+    }
+
+    return {
+        plugins: [
+            tsconfigPaths({
+                projects: [path.join(__dirname, 'tsconfig.json')],
+            }),
+            react(),
+            tailwindcss(),
+            federation({
+                name: REMOTE_FOLDER_NAME,
+                filename: 'remoteEntry.js',
+                manifest: true,
+                exposes,
+                shared,
+                dts: false,
+            }),
+        ],
+        resolve: {
+            alias: remoteAppResolveAliases(repoRoot, __dirname),
         },
-    },
-
-    build: {
-        rollupOptions: {
-            output: {
-                manualChunks: {
-                    // React 관련 모듈
-                    'vendor-react': [
-                        'react',
-                        'react-dom',
-                        'scheduler',
-                        'react/jsx-runtime',
-                    ],
-                    // Redux 관련 모듈
-                    'vendor-redux': [
-                        '@reduxjs/toolkit',
-                        'react-redux',
-                        'redux',
-                        'redux-saga',
-                    ],
-                    // i18n 관련 모듈
-                    'vendor-i18n': ['i18next', 'react-i18next'],
-                    // 애니메이션 관련 모듈
-                    'vendor-motion': ['framer-motion'],
-                    // 아이콘 관련 모듈
-                    'vendor-icons': ['lucide-react'],
-                    // Radix UI 관련 모듈
-                    'vendor-radix': [
-                        '@radix-ui/react-dialog',
-                        '@radix-ui/react-label',
-                        '@radix-ui/react-scroll-area',
-                        '@radix-ui/react-separator',
-                        '@radix-ui/react-slot',
-                        '@radix-ui/react-switch',
-                        '@radix-ui/react-tabs',
-                        '@radix-ui/react-tooltip',
-                    ],
+        server: {
+            origin: baseUrl,
+            port,
+            open: false,
+            cors: true,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+            hmr: {
+                port,
+                host: extractHostFromUrl(baseUrl),
+            },
+            fs: {
+                allow: [repoRoot],
+            },
+        },
+        preview: {
+            host: extractHostFromUrl(baseUrl),
+            port,
+            strictPort: true,
+            open: false,
+            cors: true,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+            },
+        },
+        build: {
+            target: 'chrome107',
+            rollupOptions: {
+                onwarn(warning, warn) {
+                    if (
+                        warning.code === 'EVAL' &&
+                        warning.id?.includes('@module-federation/sdk')
+                    ) {
+                        return
+                    }
+                    warn(warning)
                 },
             },
         },
-    },
-})
-
-// 폰트를 자동으로 preload하는 플러그인
-function fontPreloadPlugin(): Plugin {
-    return {
-        name: 'vite-font-preload',
-        transformIndexHtml: {
-            order: 'pre',
-            handler(html) {
-                const fontDir = path.resolve(__dirname, 'src/assets/fonts')
-                const preloadLinks: string[] = []
-                const usedFonts = getUsedFonts(html)
-
-                function walk(dir: string) {
-                    const files = fs.readdirSync(dir)
-                    for (const file of files) {
-                        const fullPath = path.join(dir, file)
-                        const stat = fs.statSync(fullPath)
-                        if (stat.isDirectory()) {
-                            walk(fullPath)
-                        } else if (
-                            file.endsWith('.woff') ||
-                            file.endsWith('.woff2')
-                        ) {
-                            const publicPath = fullPath
-                                .split('assets')[1]
-                                .replace(/\\/g, '/')
-                            const type = file.endsWith('.woff2')
-                                ? 'font/woff2'
-                                : 'font/woff'
-                            const fontName = file.split('.')[0]
-                            if (usedFonts.includes(fontName)) {
-                                preloadLinks.push(
-                                    `<link rel="preload" href="/assets${publicPath}" as="font" type="${type}" crossorigin>`,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                walk(fontDir)
-                return html.replace(
-                    '</head>',
-                    preloadLinks.join('\n') + '\n</head>',
-                )
-            },
-        },
-    }
+    } as UserConfig
 }
 
-// HTML에서 사용된 폰트를 추출하는 함수
-function getUsedFonts(html: string): string[] {
-    const fontRegex = /font-family:\s*['"]?([^;'"]+)['"]?/g
-    const usedFonts: string[] = []
-    let match
-    while ((match = fontRegex.exec(html)) !== null) {
-        usedFonts.push(match[1].toLowerCase())
-    }
-    return usedFonts
-}
-
-// 커스텀 플러그인: 빌드 후 robots.txt 복사
-function copyRobotsTxt() {
-    return {
-        name: 'copy-robots-txt',
-        closeBundle() {
-            copyFileSync(
-                resolve(__dirname, 'robots.txt'),
-                resolve(__dirname, 'dist/robots.txt'),
-            )
-        },
-    }
-}
+export default defineConfig(loadConfig())

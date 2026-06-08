@@ -1,12 +1,7 @@
-import WhLayout from 'src/shared/layout/WhLayout.tsx'
-import Home from 'src/features/Home.tsx'
+import Home from 'src/features/Home'
 
 const HomePage = () => {
-    return (
-        <WhLayout>
-            <Home />
-        </WhLayout>
-    )
+    return <Home />
 }
 
 export default HomePage

@@ -1,48 +1,41 @@
-import { createBrowserRouter, RouteObject } from 'react-router'
+/// <reference types="vite/client" />
+import { createBrowserRouter, type RouteObject } from 'react-router'
+import { Suspense, lazy } from 'react'
+import type { ComponentType } from 'react'
 import HomePage from 'src/pages/HomePage'
-import React from 'react'
-import NotFoundPage from 'src/pages/extra/NotFoundPage.tsx'
+import NotFoundPage from 'src/pages/extra/NotFoundPage'
 
-// NOTE: https://reactrouter.com/start/data/routing
-// TODO: lazy loading 적용해야 할까? > 필요 없을거 같음
+type RouteModule = { default: ComponentType }
 
-const MODULES = import.meta.glob('src/pages/url/**/*.tsx', {
-    eager: true,
-}) as Record<string, { default: React.FC }>
+const MODULES: Record<string, () => Promise<RouteModule>> =
+    import.meta.glob<RouteModule>('src/pages/url/**/*Page.tsx')
 
 const generateRoutes = (
-    modules: Record<string, { default: React.FC }>,
+    modules: Record<string, () => Promise<RouteModule>>,
 ): RouteObject[] => {
-    return Object.entries(modules).map(([path, module]) => {
-        // 파일 경로에서 'src/pages/url/' 이후의 경로를 추출
+    return Object.entries(modules).map(([path, loadModule]) => {
         const routePath = path
-            .replace(/.*src\/pages\/url\//, '') // 'src/pages/url/' 부분 제거
-            .replace(/\.tsx$/, '') // 확장자 제거
-            .replace(/Page$/, '') // 'Page' 접미사 제거
-            .replace(/\[(.*?)]/g, ':$1') // [param] -> :param 변환
+            .replace(/.*src\/pages\/url\//, '')
+            .replace(/\/[^/]+\.tsx$/, '') // 폴더명만 추출 (sample/SamplePage.tsx → sample)
             .toLowerCase()
 
-        const Component = module.default
+        const LazyComponent = lazy(loadModule)
 
         return {
             path: `/${routePath}`,
-            element: <Component />,
+            element: (
+                <Suspense fallback={null}>
+                    <LazyComponent />
+                </Suspense>
+            ),
         }
     })
 }
 
 const router = createBrowserRouter([
-    {
-        path: '/',
-        element: <HomePage />,
-    },
-
+    { path: '/', element: <HomePage /> },
     ...generateRoutes(MODULES),
-
-    {
-        path: '*',
-        element: <NotFoundPage />,
-    },
+    { path: '*', element: <NotFoundPage /> },
 ])
 
 export default router
