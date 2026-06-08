@@ -18,8 +18,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../../../')
 
 const REMOTE_FOLDER_NAME = path.basename(__dirname)
-const REMOTE_MODULE_NAME =
-    REMOTE_FOLDER_NAME.charAt(0).toUpperCase() + REMOTE_FOLDER_NAME.slice(1)
+const REMOTE_MODULE_NAME = REMOTE_FOLDER_NAME
 
 async function loadConfig(): Promise<UserConfig> {
     const envMode = (process.env.MF_ENV || 'local') as EnvMode
