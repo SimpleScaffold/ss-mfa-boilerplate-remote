@@ -15,7 +15,7 @@ export function Sample() {
             <div className="flex gap-2">
                 <button
                     type="button"
-                    className="rounded bg-blue-500 px-3 py-1 text-white"
+                    className="cursor-pointer rounded bg-blue-500 px-3 py-1 text-white"
                     onClick={() => dispatch(sampleAction.increment())}
                 >
                     +1
@@ -23,7 +23,7 @@ export function Sample() {
                 <SampleComponent />
                 <button
                     type="button"
-                    className="rounded bg-gray-500 px-3 py-1 text-white"
+                    className="cursor-pointer rounded bg-gray-500 px-3 py-1 text-white"
                     onClick={() => dispatch(sampleAction.decrement())}
                 >
                     -1
